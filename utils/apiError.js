@@ -1,4 +1,4 @@
-// to pass error code along with message
+// custom class to pass error code along with message
 class apiError extends Error{
     constructor(message, statusCode) {
         super(message);

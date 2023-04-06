@@ -31,6 +31,7 @@ const createUser = asyncHandler(
   // names must be at least 3 chars long
   body("first_name").isLength({ min: 3 }),
   body("last_name").isLength({ min: 3 }),
+  body("age").isNumeric({min: 1}),
   // email must be provided in right format
   body("email").isEmail(),
   async (req, res) => {
@@ -41,22 +42,17 @@ const createUser = asyncHandler(
     }
 
     // get verified data from request body
-    const { firstName, lastName, age } = req.body;
+    const { first_name, last_name, age, email } = req.body;
     const query =
-      "INSERT INTO users (first_name, last_name, age) VALUES ($1, $2, $3) RETURNING *";
+      "INSERT INTO users (first_name, last_name, age, email) VALUES ($1, $2, $3, $4) RETURNING *";
 
     const {
       rows: [user],
-    } = await dbConn.query(query, [firstName, lastName, age]);
+    } = await dbConn.query(query, [first_name, last_name, age, email]);
 
     res.status(201).json(user);
   }
 );
-
-const testFunc = (req, res, next) => {
-  console.log("Hello from middleware func in update route");
-  next();
-};
 
 // UPDATE:
 // PUT /users/:id ⇒ update a specific user
@@ -66,16 +62,15 @@ const testFunc = (req, res, next) => {
 // - Dynamically create a parameterized SQL query according to the existence of the 2 variables (firstname/lastname). 
 // - If there is an error during the DB request, send a status code 500 (internal server error) to the client
 const updateUser = asyncHandler(async(req, res) => {
-  console.log("Hello from PUT")
     const { id } = req.params;
-    const { firstName, lastName, email } = req.body;
+    const { first_name, last_name, age, email } = req.body;
 
     // Todo: use validator to check firstName, lastName, email
 
     // middleware function "userExists" has checked whether user is in db
 
-    const updateQuery = "UPDATE FROM users SET first_name=$1, last_name=$2, email=$3 WHERE id=$4 RETURNING *"
-    const { rows: [user]} = await dbConn.query(updateQuery, [firstName, lastName, email, id])
+    const updateQuery = "UPDATE users SET first_name=$1, last_name=$2, age=$3, email=$4 WHERE id=$5 RETURNING *"
+    const { rows: [user]} = await dbConn.query(updateQuery, [first_name, last_name, age, email, id])
     if (!user)
         return res.status(500).send("Could not update user.")
 
@@ -98,4 +93,4 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 
-export { getUsers, getUser, createUser, updateUser, deleteUser, testFunc };
+export { getUsers, getUser, createUser, updateUser, deleteUser };
