@@ -8,8 +8,6 @@ const userExists = async (req, res, next) => {
 
   if (!user) 
     return res.status(404).send("User not found");
-  // What to do here? Return or throw error?
-  // throw new apiError("User not found", 404);
 
   // add user to request - for the next mw function to use
   req.user = user;
